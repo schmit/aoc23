@@ -32,14 +32,26 @@ defmodule Day4 do
       {winning_set, numbers_set} = parse_line(line)
 
       o = overlap(winning_set, numbers_set)
-
-      if o > 0 do
-        2 ** (o - 1)
-      else
-        0
-      end
+      if o > 0, do: 2 ** (o - 1), else: 0
     end)
     |> Enum.sum()
+  end
+
+  def update_copies(copies, _index, 0, _scratches), do: copies
+
+  def update_copies(copies, index, overlap, scratches) do
+    Enum.reduce(1..overlap, copies, fn j, c ->
+      {_, result} =
+        c
+        |> Map.get_and_update(index + j, fn current ->
+          case current do
+            nil -> {current, scratches}
+            current -> {current, current + scratches}
+          end
+        end)
+
+      result
+    end)
   end
 
   def solve_part2(lines) do
@@ -57,25 +69,7 @@ defmodule Day4 do
         scratches = 1 + Map.get(copies, index, 0)
 
         # update the map that keeps track of how many copies we have
-        new_copies =
-          case overlap do
-            0 ->
-              copies
-
-            n ->
-              Enum.reduce(1..n, copies, fn j, c ->
-                {_, result} =
-                  c
-                  |> Map.get_and_update(index + j, fn current ->
-                    case current do
-                      nil -> {current, scratches}
-                      current -> {current, current + scratches}
-                    end
-                  end)
-
-                result
-              end)
-          end
+        new_copies = update_copies(copies, index, overlap, scratches)
 
         {new_copies, count + scratches}
       end)
