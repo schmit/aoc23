@@ -114,11 +114,11 @@ defmodule Day5 do
     range_maps
     |> Enum.reduce(
       {start_index, nil},
-      fn range_map, {current_index, current_pad} ->
+      fn range_map, {current_index, current_step} ->
         {new_index, step} = RangeMap.map_index_with_step(range_map, current_index)
 
         new_step =
-          case {current_pad, step} do
+          case {current_step, step} do
             {nil, nil} -> nil
             {nil, p} -> p
             {p, nil} -> p
