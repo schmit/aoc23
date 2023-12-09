@@ -21,7 +21,7 @@ fn combine_first_and_last(digits: Vec<i32>) -> i32 {
 }
 
 fn solve_part1(content: String) -> i32 {
-    content
+    return content
         .lines()
         .map(|line| {
         let digits = find_digits(line);
@@ -31,7 +31,7 @@ fn solve_part1(content: String) -> i32 {
 }
 
 fn solve_part2(content: String) -> i32 {
-    content
+    return content
         .lines()
         .map(|line| {
         let updated_line = line
