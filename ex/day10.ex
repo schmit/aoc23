@@ -96,6 +96,17 @@ defmodule Day10 do
     |> Enum.into(%{})
   end
 
+  def get_nodes(lines) do
+    lines
+    |> Enum.map(&String.graphemes/1)
+    |> Enum.with_index()
+    |> Enum.map(fn {row, i} ->
+      row
+      |> Enum.with_index()
+      |> Enum.map(fn {elem, j} -> {{i, j}, elem} end)
+    end)
+  end
+
   def solve_part1(input) do
     lines =
       input
@@ -108,5 +119,52 @@ defmodule Day10 do
     |> find_loop
     |> Enum.map(fn {_, s} -> s end)
     |> Enum.max()
+  end
+
+  def solve_part2(input) do
+    lines =
+      input
+      |> String.trim()
+      |> String.split("\n")
+
+    map = Day10.get_map(lines)
+
+    loop_nodes =
+      map
+      |> Day10.find_loop()
+      |> Enum.map(fn {node, _} -> node end)
+      |> Enum.into(MapSet.new())
+
+    {counts, finish_outside} =
+      lines
+      |> Day10.get_nodes()
+      |> Enum.map(fn line ->
+        line
+        |> Enum.reduce({0, false}, fn {loc, val}, {n_in, is_in} ->
+          # do horizontal scans, every time we hit a loop node,
+          # we switch whether we are in or outside the loop
+          if MapSet.member?(loop_nodes, loc) do
+            case val do
+              "-" -> {n_in, is_in}
+              # this might be {n_in, is_in},
+              # we can check the validity of this later
+              # and switch if needed
+              "S" -> {n_in, not is_in}
+              # assume we are eps below the centerline
+              # so these two pipes don't cause us to switch
+              "L" -> {n_in, is_in}
+              "J" -> {n_in, is_in}
+              _ -> {n_in, not is_in}
+            end
+          else
+            # if we do not hit a loop node, we add 1 to the count if when inside loop
+            if is_in, do: {n_in + 1, is_in}, else: {n_in, is_in}
+          end
+        end)
+      end)
+      |> Enum.unzip()
+
+    # if second is true, then switch the "S" case statement
+    {counts |> Enum.sum(), Enum.any?(finish_outside)}
   end
 end
